@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 import { Place } from './place.model';
+import { take, map, tap, delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlacesService {
-  private innerPlaces: Place[] = [
+  private innerPlaces = new BehaviorSubject<Place[]>([
     new Place(
       'p1',
       'Manhattan Mansion',
@@ -14,6 +17,7 @@ export class PlacesService {
       149.99,
       new Date('2021-01-01'),
       new Date('2021-12-31'),
+      'aj'
     ),
     new Place(
       'p2',
@@ -23,6 +27,7 @@ export class PlacesService {
       189.99,
       new Date('2021-01-01'),
       new Date('2021-12-31'),
+      'aj'
     ),
     new Place(
       'p3',
@@ -32,17 +37,51 @@ export class PlacesService {
       99.99,
       new Date('2021-01-01'),
       new Date('2021-12-31'),
+      'aj'
     )
-  ];
+  ]);
 
   get places() {
-    return [...this.innerPlaces];
+    return this.innerPlaces.asObservable();
   }
 
-  constructor() { }
+  constructor(private authService: AuthService) { }
 
   getPlace(id: string)
   {
-    return {...this.innerPlaces.find(x=>x.id === id)};
+    return this.places.pipe(
+      take(1),
+      map(places => ({ ...places.find(x=>x.id === id) }))
+    );
+
+    //return this.innerPlaces.find(x=>x.id === id);
+  }
+
+  addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date)
+  {
+    const place = new Place(
+      Math.random().toString(),
+      title,
+      description,
+      'https://upload.wikimedia.org/wikipedia/commons/0/01/San_Francisco_with_two_bridges_and_the_fog.jpg',
+      price,
+      dateFrom,
+      dateTo,
+      this.authService.userId
+    );
+    return this.places.pipe(
+      take(1),
+      delay(1000),
+      tap(places => {
+        this.innerPlaces.next(places.concat(place));
+      })
+    );
+    // this.places.pipe(take(1)).subscribe(places => {
+    //   setTimeout(() => {
+    //     this.innerPlaces.next(places.concat(place));
+    //   }, 2000);
+    // });
   }
 }
+
+
