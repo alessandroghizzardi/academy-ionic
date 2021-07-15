@@ -17,7 +17,7 @@ export class PlacesService {
       149.99,
       new Date('2021-01-01'),
       new Date('2021-12-31'),
-      'aj'
+      'vj'
     ),
     new Place(
       'p2',
@@ -27,7 +27,7 @@ export class PlacesService {
       189.99,
       new Date('2021-01-01'),
       new Date('2021-12-31'),
-      'aj'
+      'vj'
     ),
     new Place(
       'p3',
@@ -37,7 +37,7 @@ export class PlacesService {
       99.99,
       new Date('2021-01-01'),
       new Date('2021-12-31'),
-      'aj'
+      'vj'
     )
   ]);
 
@@ -52,6 +52,22 @@ export class PlacesService {
     return this.places.pipe(
       take(1),
       map(places => ({ ...places.find(x=>x.id === id) }))
+    );
+
+    //return this.innerPlaces.find(x=>x.id === id);
+  }
+
+  updatePlace(place: Place)
+  {
+    return this.places.pipe(
+      take(1),
+      delay(1000),
+      tap(places => {
+        const i = places.findIndex(x=>x.id === place.id);
+        const newPlaces = [...places];
+        newPlaces[i] = place;
+        this.innerPlaces.next(places);
+      })
     );
 
     //return this.innerPlaces.find(x=>x.id === id);
