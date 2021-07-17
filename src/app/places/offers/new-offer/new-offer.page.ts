@@ -54,12 +54,14 @@ export class NewOfferPage implements OnInit {
     }).then(loading => {
       loading.present();
 
+      console.log(this.form.value);
+
       this.placesService.addPlace(
         this.form.value.title,
         this.form.value.description,
         +this.form.value.price,
-        new Date(this.form.value.dateFrom),
-        new Date(this.form.value.dateTo)
+        new Date(this.form.value.availableFrom),
+        new Date(this.form.value.availableTo)
       ).subscribe(() => {
         console.log(this.placesService.places);
         loading.dismiss();
