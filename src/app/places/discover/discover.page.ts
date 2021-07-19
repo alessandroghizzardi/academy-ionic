@@ -13,11 +13,13 @@ import { PlacesService } from '../places.service';
   styleUrls: ['./discover.page.scss'],
 })
 export class DiscoverPage implements OnInit, OnDestroy {
+  isLoading = false;
   loadedPlaces: Place[];
   showcasePlace: Place;
   virtualLoadedPlaces: Place[];
   relevantPlaces: Place[];
   private placesSubscription: Subscription;
+  private fetchSubscription: Subscription;
 
   constructor(
     private placesService: PlacesService,
@@ -25,8 +27,26 @@ export class DiscoverPage implements OnInit, OnDestroy {
     private authService: AuthService
   ) { }
 
+
   ionViewWillEnter()
   {
+    this.isLoading = true;
+
+    // this.loadingController.create({
+    //   message: 'Loading'
+    // }).then(loader => {
+    //   loader.present();
+      this.fetchSubscription = this.placesService.fetchPlaces().subscribe(
+        res => {
+          this.isLoading = false;
+          //loader.dismiss();
+        }
+      );
+    //});
+
+  }
+
+  ngOnInit() {
     this.placesSubscription = this.placesService.places.subscribe(places => {
       this.loadedPlaces = places;
       this.relevantPlaces = this.loadedPlaces;
@@ -35,13 +55,16 @@ export class DiscoverPage implements OnInit, OnDestroy {
       console.log(this.relevantPlaces);
     });
   }
-  ngOnInit() {
-
-  }
   ngOnDestroy() {
     if (this.placesSubscription)
     {
       this.placesSubscription.unsubscribe();
+    }
+
+    if (this.fetchSubscription)
+    {
+      this.fetchSubscription.unsubscribe();
+
     }
   }
 

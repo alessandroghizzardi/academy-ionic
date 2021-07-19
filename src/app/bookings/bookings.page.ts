@@ -11,6 +11,7 @@ import { BookingService } from './booking.service';
 })
 export class BookingsPage implements OnInit , OnDestroy {
   bookings: Booking[];
+  isLoading = false;
   private bookingsSubscription: Subscription;
 
   constructor(
@@ -19,14 +20,16 @@ export class BookingsPage implements OnInit , OnDestroy {
     ) { }
 
   ngOnInit() {
-
+    this.bookingsSubscription = this.bookingService.bookings.subscribe(bookings => {
+      this.bookings = bookings;
+    });
   }
 
   ionViewWillEnter()
   {
-    this.bookingsSubscription = this.bookingService.bookings.subscribe(bookings => {
-      this.bookings = bookings;
-      console.log('ionWillEnter booking subscription', this.bookings);
+    this.isLoading = true;
+    this.bookingService.fetchBookings().subscribe(() => {
+      this.isLoading = false;
     });
     //this.bookings = this.bookingService.bookings;
   }

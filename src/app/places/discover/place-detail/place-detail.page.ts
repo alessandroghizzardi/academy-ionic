@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionSheetController, LoadingController, ModalController, NavController } from '@ionic/angular';
+import { ActionSheetController, AlertController, LoadingController, ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/auth/auth.service';
 import { BookingService } from 'src/app/bookings/booking.service';
@@ -15,18 +15,21 @@ import { PlacesService } from '../../places.service';
 })
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
+  isLoading = false;
   isBookable = false;
 
   private placeSubscription: Subscription;
   constructor(
     private bookingService: BookingService,
     private route: ActivatedRoute,
+    private router: Router,
     private navController: NavController,
     private placesService: PlacesService,
     private modalController: ModalController,
     private actionSheetController: ActionSheetController,
     private loadingController: LoadingController,
-    private authService: AuthService
+    private authService: AuthService,
+    private alertController: AlertController
     ) { }
 
   ngOnInit() {
@@ -36,11 +39,27 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         this.navController.navigateBack('/places/tabs/discover');
         return;
       }
+      this.isLoading = true;
 
       this.placeSubscription = this.placesService.getPlace(paramMap.get('placeId')).subscribe(
         place => {
           this.place = place;
           this.isBookable = this.place.userId === this.authService.userId;
+          this.isLoading=false;
+        },
+        error => {
+          this.alertController.create({
+            header: 'Error',
+            message: 'Error retrieving data',
+            buttons: [{
+              text: 'Ok',
+              handler: () => {
+                this.router.navigate(['/places/tabs/discover']);
+              }
+            }]
+          }).then(ctrl => {
+            ctrl.present();
+          });
         }
       );
     });
